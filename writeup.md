@@ -88,13 +88,13 @@ The final step was to run the simulator to see how well the car was driving arou
 
 At the end of the process, the vehicle WAS able to drive autonomously around the track 1 several laps without leaving the road.
 
-####2. Final Model Architecture
+#### 2. Final Model Architecture
 
 The final model architecture consisted of a convolution neural network with the following layers:
 
 
 |Layer type 					 |Output Shape  					|Param#	|
-|:------------------------------:|:----------------------------------------:|
+|:------------------------------:|:---------------------------------|------:|
 |Cropping2D  					 |(None, 90, 320, 3)				| 0 	|   
 |Lambda     					 |(None, 90, 320, 3)				| 0 	|         
 |Conv2D 						 |(None, 43, 158, 24)				| 1824	|   
@@ -110,7 +110,6 @@ The final model architecture consisted of a convolution neural network with the 
 |Dense4						 	 | (None, 1) 						| 11	|
 
 * Total params: 981,819
-
 
 #### 3. Creation of the Training Set & Training Process
 
