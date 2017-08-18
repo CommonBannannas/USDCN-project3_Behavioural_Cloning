@@ -4,12 +4,15 @@ from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
-from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Cropping2D
 import os
 import matplotlib.image as mpimg
 import cv2
+from tensorflow.python.client import device_lib
 
-old_path = '/home/sergio/workspace/udacity/USDCN-project3_Behavioural_Cloning/data/'
+print(device_lib.list_local_devices())
+
+old_path = '/home/sergio/workspace/sim_data/'
 
 def fix_path(data_df):
     cols = data_df.columns.tolist()
@@ -20,13 +23,38 @@ def fix_path(data_df):
             pass
     return data_df
 
-def preprocess(image):
-    # remove the sky and the car front
-    image = image[60:-25, :, :] 
-    # resize image
-    image = cv2.resize(image, (IM_WIDTH, IM_HEIGHT), cv2.INTER_AREA)
-    # rgb2yuv this is what the nvvidia model does
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2YUV)
+def augment_brightness(image):
+    image1 = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
+    image1 = np.array(image1, dtype = np.float64)
+    random_bright = .5+np.random.uniform()
+    image1[:,:,2] = image1[:,:,2]*random_bright
+    image1[:,:,2][image1[:,:,2]>255]  = 255
+    image1 = np.array(image1, dtype = np.uint8)
+    image1 = cv2.cvtColor(image1,cv2.COLOR_HSV2RGB)
+    return image1
+
+def add_shadow(image):
+    top_y = 320*np.random.uniform()
+    top_x = 0
+    bot_x = 160
+    bot_y = 320*np.random.uniform()
+    image_hls = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
+    shadow_mask = 0*image_hls[:,:,1]
+    X_m = np.mgrid[0:image.shape[0],0:image.shape[1]][0]
+    Y_m = np.mgrid[0:image.shape[0],0:image.shape[1]][1]
+
+    shadow_mask[((X_m-top_x)*(bot_y-top_y) -(bot_x - top_x)*(Y_m-top_y) >=0)]=1
+    
+    if np.random.randint(2)==1:
+        random_bright = .5
+        cond1 = shadow_mask==1
+        cond0 = shadow_mask==0
+        if np.random.randint(2)==1:
+            image_hls[:,:,1][cond1] = image_hls[:,:,1][cond1]*random_bright
+        else:
+            image_hls[:,:,1][cond0] = image_hls[:,:,1][cond0]*random_bright    
+    image = cv2.cvtColor(image_hls,cv2.COLOR_HLS2RGB)
+
     return image
 
 def augment_images(data_dir, center, left, right, steering_angle):
@@ -60,28 +88,32 @@ def batch_generator(data_dir, image_paths, steering_angles, batch_size, is_train
             if is_training and np.random.rand() < 0.6:
                 # augment data when in training
                 image, steering_angle = augment_images(data_dir, center, left, right, steering_angle)
+                
+                
             else:
                 # chooses image from center
                 image = mpimg.imread(os.path.join(data_dir, center.strip()))
+            
+            
             # add image and steering angle
-            images[i] = preprocess(image)
+            images[i] = add_shadow(augment_brightness(image))
             steers[i] = steering_angle
             i += 1
             if i == batch_size:
                 break
         yield images, steers
-        
-        
+
+
 np.random.seed(42)
 IM_HEIGHT = 160
 IM_WIDTH = 320
 IM_CHANNELS = 3
 
 # load data
-data_dir = './data/'
+data_dir = './data2/'
 test_size = .25
 
-data_df = pd.read_csv(os.path.join(data_dir,'driving_log.csv'))
+data_df = pd.read_csv(os.path.join(data_dir,'driving_log_final.csv'))
 data_df.columns = ['center','left','right','steering','throttle','break','speed']
 
 data_df = fix_path(data_df)
@@ -91,46 +123,58 @@ y = data_df['steering'].values
 
 X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=test_size, random_state=42)
 
+
+print(data_df.head())
+print('----------------------------')
+print(len(X_train), len(X_valid))
+print('----------------------------')
+print(len(X_train) + len(X_valid))
+print('----------------------------')
 # build keras model
 INPUT_SHAPE = (IM_HEIGHT, IM_WIDTH, IM_CHANNELS)
-keep_prob = .6
-
+keep_prob = .55
+# https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
+# nvidia's network architecture
 model = Sequential()
-model.add(Lambda(lambda x: x/127.5-1.0, input_shape=INPUT_SHAPE))
-model.add(Conv2D(24, 5, 5, activation='elu', subsample=(2, 2)))
-model.add(Conv2D(36, 5, 5, activation='elu', subsample=(2, 2)))
-model.add(Conv2D(48, 5, 5, activation='elu', subsample=(2, 2)))
-model.add(Conv2D(64, 3, 3, activation='elu'))
-model.add(Conv2D(64, 3, 3, activation='elu'))
+model.add(Cropping2D(cropping=((50,20), (0,0)), input_shape=(160,320,3)))
+model.add(Lambda(lambda x: x/127.5-1.0))
+
+model.add(Conv2D(24, 5, activation='elu', strides=(2, 2)))
+model.add(Conv2D(36, 5, activation='elu', strides=(2, 2)))
+model.add(Conv2D(48, 5, activation='elu', strides=(2, 2)))
+model.add(Conv2D(64, 3, activation='elu'))
+model.add(Conv2D(64, 3, activation='elu'))
+
 model.add(Dropout(keep_prob))
+
 model.add(Flatten())
+
 model.add(Dense(100, activation='elu'))
 model.add(Dense(50, activation='elu'))
 model.add(Dense(10, activation='elu'))
 model.add(Dense(1))
+
 model.summary()
 
 # train model
 learning_rate = 1.0e-4
-batch_size = 250
-samples_per_epoch = data_df.shape[0]*50/batch_size
-nb_epoch = 5
-
-checkpoint = ModelCheckpoint('model-{epoch:03d}.h5',
-                             monitor='val_loss',
-                             verbose=0,
-                             save_best_only=True,
-                             mode='auto')
+batch_size = 64
+steps_per_epoch = 500
+nb_epoch = 10
 
 model.compile(loss='mean_squared_error', optimizer=Adam(lr=learning_rate))
 
 model.fit_generator(batch_generator(data_dir, X_train, y_train, batch_size, True),
-                    samples_per_epoch,
+                    steps_per_epoch,
                     nb_epoch,
-                    max_q_size=1,
-                    validation_data = batch_generator(data_dir, X_valid, y_valid, batch_size, False),
-                    nb_val_samples=len(X_valid),
-                    callbacks=[checkpoint], 
+                    max_queue_size=1,
+                    validation_data=batch_generator(data_dir, X_valid, y_valid, batch_size, False),
+                    validation_steps=len(X_valid),
                     verbose=1) 
-print('saving')
+print('saving...')
 model.save('model.h5')
+
+
+
+
+
