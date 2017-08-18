@@ -93,20 +93,20 @@ At the end of the process, the vehicle WAS able to drive autonomously around the
 The final model architecture consisted of a convolution neural network with the following layers:
 
 
-|Layer type 					 |Output Shape  					| Param #|   
-|Cropping2D  					 |(None, 90, 320, 3)				| 0      |   
-|Lambda     					 |(None, 90, 320, 3)				| 0      |         
-|Conv2D 						 |(None, 43, 158, 24)				| 1824   |   
-|Conv2D						 	 |(None, 20, 77, 36)				| 21636  |   
-|Conv2D						 	 |(None, 8, 37, 48)					| 43248  |
-|Conv2D						 	 | (None, 6, 35, 64)				| 27712  |
-|Conv2D						 	 | (None, 4, 33, 64)				| 36928  |
-|Dropout					 	 | (None, 4, 33, 64) 				| 0      |
-|Flatten					 	 | (None, 8448) 					| 0      |
-|Dense						 	 | (None, 100) 						| 844900 |
-|Dense2						 	 | (None, 50) 						| 5050   |
-|Dense3						 	 | (None, 10) 						| 510    |
-|Dense4						 	 | (None, 1) 						| 11     |
+|Layer type 					 |Output Shape  					|Param#	|   
+|Cropping2D  					 |(None, 90, 320, 3)				| 0 	|   
+|Lambda     					 |(None, 90, 320, 3)				| 0 	|         
+|Conv2D 						 |(None, 43, 158, 24)				| 1824	|   
+|Conv2D						 	 |(None, 20, 77, 36)				| 21636	|   
+|Conv2D						 	 |(None, 8, 37, 48)					| 43248	|
+|Conv2D						 	 | (None, 6, 35, 64)				| 27712	|
+|Conv2D						 	 | (None, 4, 33, 64)				| 36928	|
+|Dropout					 	 | (None, 4, 33, 64) 				| 0 	|
+|Flatten					 	 | (None, 8448) 					| 0 	|
+|Dense						 	 | (None, 100) 						|844900	|
+|Dense2						 	 | (None, 50) 						| 5050	|
+|Dense3						 	 | (None, 10) 						| 510	|
+|Dense4						 	 | (None, 1) 						| 11	|
 
 * Total params: 981,819
 
