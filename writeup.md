@@ -76,8 +76,10 @@ For details about how I created the training data, see the next section.
 
 #### 1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to watch and take notes from the lessons on the classroom, read Nvidia's End to end learning for self dricing cars and read their post. Also it helped a lot to read on Medium my other fellow classmates posts.
+The overall strategy for deriving a model architecture was to watch and take notes from the lessons on the classroom, read Nvidia's End to end learning for self dricing cars and read their post. Also it helped a lot to read on Medium my other fellow classmates solution posts.
+Specially [chatbot'slife Medium post](https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9) helped me a lot with the image preprocessing like adding random brightness and shadows to make the model more robust. 
 
+Another important part of the image preprocessing is to crop the images before entering the network, cropping the sky and vehicle hood from the images helps the model to generalize better and just 'see' the road.
 
 In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set.
 To combat the overfitting, I used one dropout layer after all the convolutional layers on the model. 
@@ -86,7 +88,7 @@ Then I tried with different number of epochs and batch sizes to improve the accu
 
 The final step was to run the simulator to see how well the car was driving around track one. The first runs the car fell off the track on the very first curves then I tried just using the data from the driving log that had a steering angle different from 0. This process is on the jupyter notebook titled "preprocess.ipynb". Then I visualized the distribution of steering angles and made shure it looked balanced.
 
-The file drive.py was modified to force the top speed of the car to 20.
+The file drive.py was modified to force the speed of the car to 20.
 
 At the end of the process, the vehicle was able to drive autonomously around the track 1 several laps without leaving the road.
 
@@ -120,7 +122,7 @@ To capture good driving behavior, I used the driving data provided by Udacity an
 
 ![alt text][image2]
 
-To augment the data set I used a generator to augment data 'on the fly' and defined the functions: 'augment_brightness' to add random brighntess to the image, 'augment images' to randomly flip and tilt an image from either the center, left or right camera, and 'add shadow' to add a random shadow on the images. All of this to make the model more robust to different lighting setups and roads.
+To augment the data set I used a generator to augment data 'on the fly' and defined the functions: 'augment_brightness' to add random brighntess to the image, 'augment images' to randomly flip and tilt an image from either the center, left or right camera, and 'add shadow' to add a random shadow on the images. All of this to make the model more robust to different lighting setups and roads. 
 
 Then I used the function 'batch_generator' to take a random batch of images and apply the functions mentioned above and traing the model with them on the fly. 
 
