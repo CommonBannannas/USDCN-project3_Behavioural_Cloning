@@ -37,7 +37,7 @@ My project includes the following files:
 * preprocess.ipynb jupyter notebook with some data preprocessing and visualizations.
 * behavioral_cloning.ipynb jupyter notebook containing the model (as in model.py) and the functions I used to augment and preprocess the images.
 
-### #2. Submission includes functional code
+#### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing:
 ```sh
 python drive.py model.h5
@@ -68,7 +68,7 @@ The model used an adam optimizer with a starting learning rate of 1(10)^-4
 
 #### 4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, center lane driving in the other direction and recovering from the left and right sides of the road. The training data I used came form various sources: training files provided by udacity, recovery training data from [another student's github](https://github.com/cssomnath/udacity-sdc/tree/master/carnd-projects/CarND-Behavioral-Cloning/sharp_turn.zip) and my own training data of center lane driving on track 1 and driving in the inverse direction on track 1.
+Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, center lane driving in the other direction and recovering from the left and right sides of the road. The training data I used came form various sources: training files provided by Udacity, recovery training data from [another student's github](https://github.com/cssomnath/udacity-sdc/tree/master/carnd-projects/CarND-Behavioral-Cloning/sharp_turn.zip) and my own training data of center lane driving on track 1 and driving in the inverse direction on track 1.
 
 For details about how I created the training data, see the next section. 
 
@@ -86,7 +86,9 @@ Then I tried with different number of epochs and batch sizes to improve the accu
 
 The final step was to run the simulator to see how well the car was driving around track one. The first runs the car fell off the track on the very first curves then I tried just using the data from the driving log that had a steering angle different from 0. This process is on the jupyter notebook titled "preprocess.ipynb". Then I visualized the distribution of steering angles and made shure it looked balanced.
 
-At the end of the process, the vehicle WAS able to drive autonomously around the track 1 several laps without leaving the road.
+The file drive.py was modified to force the top speed of the car to 20.
+
+At the end of the process, the vehicle was able to drive autonomously around the track 1 several laps without leaving the road.
 
 #### 2. Final Model Architecture
 
@@ -108,12 +110,13 @@ The final model architecture consisted of a convolution neural network with the 
 |Dense2						 	 | (None, 50) 						| 5050	|
 |Dense3						 	 | (None, 10) 						| 510	|
 |Dense4						 	 | (None, 1) 						| 11	|
+|Total params:				 	 | 									|981,819|
 
-* Total params: 981,819
+
 
 #### 3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I used the driving data provided by Udacity and my own center lane driving data. Also I found on a Meidum post and then on a github some excellent driving recovery data and added it to the training set. The final steering angle distribution looked like this:
+To capture good driving behavior, I used the driving data provided by Udacity and my own center lane driving data. Also, I found on a Meidum post and then on a github some excellent recovery driving  data and added it to the training set. The final steering angle distribution looked like this:
 
 ![alt text][image2]
 
@@ -121,7 +124,7 @@ To augment the data set I used a generator to augment data 'on the fly' and defi
 
 Then I used the function 'batch_generator' to take a random batch of images and apply the functions mentioned above and traing the model with them on the fly. 
 
-I randomly shuffled the data set with sklearn's 'train_test_split' and used a testing size of 20%.
+I randomly shuffled the data set with sklearn's 'train_test_split' and used a testing size of 25%.
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 10.
 

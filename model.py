@@ -24,22 +24,22 @@ def fix_path(data_df):
     return data_df
 
 def augment_brightness(image):
-    image1 = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
-    image1 = np.array(image1, dtype = np.float64)
-    random_bright = .5+np.random.uniform()
-    image1[:,:,2] = image1[:,:,2]*random_bright
-    image1[:,:,2][image1[:,:,2]>255]  = 255
-    image1 = np.array(image1, dtype = np.uint8)
-    image1 = cv2.cvtColor(image1,cv2.COLOR_HSV2RGB)
-    return image1
+    image = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
+    image = np.array(image, dtype = np.float64)
+    random_bright = .5 + np.random.uniform()
+    image[:,:,2] = image[:,:,2] * random_bright
+    image[:,:,2][image[:,:,2] > 255]  = 255
+    image = np.array(image, dtype = np.uint8)
+    image = cv2.cvtColor(image,cv2.COLOR_HSV2RGB)
+    return image
 
 def add_shadow(image):
-    top_y = 320*np.random.uniform()
+    top_y = 320 * np.random.uniform()
     top_x = 0
     bot_x = 160
-    bot_y = 320*np.random.uniform()
+    bot_y = 320 * np.random.uniform()
     image_hls = cv2.cvtColor(image,cv2.COLOR_RGB2HLS)
-    shadow_mask = 0*image_hls[:,:,1]
+    shadow_mask = 0 * image_hls[:,:,1]
     X_m = np.mgrid[0:image.shape[0],0:image.shape[1]][0]
     Y_m = np.mgrid[0:image.shape[0],0:image.shape[1]][1]
 
